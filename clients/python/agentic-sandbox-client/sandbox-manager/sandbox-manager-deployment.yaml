@@ -1,0 +1,82 @@
+---
+# RBAC for the Sandbox Manager
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sandbox-manager-sa
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sandbox-manager-role
+rules:
+- apiGroups: [""] # The "core" API group
+  resources: ["services", "pods", "namespaces", "configmaps", "secrets", "events"] # Manager needs to see these to sync its cache
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["extensions.agents.x-k8s.io"]
+  resources: ["sandboxclaims", "sandboxclaims/status"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["authentication.k8s.io"]
+  resources: ["tokenreviews"]
+  verbs: ["create"]
+- apiGroups:
+  - agents.x-k8s.io
+  resources: ["sandboxes", "sandboxes/status"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sandbox-manager-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sandbox-manager-role
+subjects:
+- kind: ServiceAccount
+  name: sandbox-manager-sa
+  namespace: default
+---
+# Deployment for the Sandbox Manager
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sandbox-manager
+  namespace: default
+  labels:
+    app: sandbox-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sandbox-manager
+  template:
+    metadata:
+      labels:
+        app: sandbox-manager
+    spec:
+      serviceAccountName: sandbox-manager-sa
+      containers:
+      - name: manager
+        # Replace with your actual image name and tag
+        image: us-central1-docker.pkg.dev/shrutinair-gke-dev/sandbox-manager/sandbox-manager:latest
+        ports:
+        - containerPort: 8000
+---
+# Service to expose the Sandbox Manager
+apiVersion: v1
+kind: Service
+metadata:
+  name: sandbox-manager-svc
+  namespace: default
+spec:
+  selector:
+    app: sandbox-manager
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
