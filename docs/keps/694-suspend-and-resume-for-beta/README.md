@@ -223,7 +223,7 @@ parameters:
 
 ```yaml
 apiVersion: agents.x-k8s.io/v1beta1
-kind: AgentSandbox
+kind: Sandbox
 metadata:
   name: billing-agent-42
 spec:
@@ -242,7 +242,7 @@ spec:
 ```yaml
 # 1. THE HOT STRATEGY: Zero latency, high compute cost
 spec:
-  suspended: true
+  suspend: true
   strategy:
     type: "Freeze"
 
@@ -250,7 +250,7 @@ spec:
 
 # 2. THE WARM STRATEGY: Medium latency (RESTORES RAM), zero compute cost, high storage cost
 spec:
-  suspended: true
+  suspend: true
   strategy:
     type: "Hibernate"
     hibernate:
@@ -261,7 +261,7 @@ spec:
 
 # 3. THE COLD STRATEGY: High latency (REBOOTS DISK), zero compute cost, low storage cost
 spec:
-  suspended: true
+  suspend: true
   strategy:
     type: "Stop" # (Wipes the pod, but keeps the disk)
 ```
