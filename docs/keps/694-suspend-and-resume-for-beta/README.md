@@ -274,6 +274,10 @@ condition to determine the state of the Sandbox. We can extend this status to re
 
 ## How Resume Works
 
-**Resume must read from the `status` block**, because the status represents the physical reality of where the last state is currently stored.
-Based on the last status of the Sandbox, the resume will make the Sandbox running again. 
-For the scope of beta, the controller will bring back the pod on `spec.suspend` is set to `False`. 
+The resume operation follows the native, level-triggered controller pattern of Kubernetes by continuously reconciling the desired state specified in `spec` against the observed state of physical cluster resources.
+
+When `spec.suspend` is toggled to `false` (or omitted), the controller executes the following logic sequence during its reconciliation loop:
+
+- **Observe Current State:** The controller queries the API server to check for the existence of the underlying runner Pod associated with the AgentSandbox.
+- **Reconcile Discrepancy:** If no active runner Pod is found, the controller interprets this as a mandate to resume/boot the workspace. It invokes the Pod driver to construct a fresh runner Pod shell and securely mounts the existing persistent data volumes containing the workspace state.
+- **Reflect Status:** Only after the physical resources have been successfully evaluated or created does the controller update the status block to inform external clients of the current observed state (e.g., setting `status.state` to Running or updating `status.conditions`).
