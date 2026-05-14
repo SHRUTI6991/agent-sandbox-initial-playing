@@ -22,11 +22,11 @@
 The current Sandbox API has `spec.replicas` field that controls the creation and deletion of Pods 
 associated with the Sandbox. The allowed values are 0 and 1. `spec.replicas` is part of the `/scale` subresource which can be used by other systems like HPA or KEDA to auto scale the sandbox.
 
-When the user patches `spec.replicas` to 0, the pod is terminated associated with the Sandbox. The
+When the user patches `spec.replicas` to 0, the pod associated with the Sandbox is terminated. The
 Sandbox CR still exists in the cluster.
-When the user patches `spec.replicas` to 1, the pod is created and attatched back to the Sandbox and. 
+When the user patches `spec.replicas` to 1, the pod is created and attached back to the Sandbox and. 
 
-The `spec.replicas` field is being shoehorned for Suspend and Resume use-case. This is unintuiative for the users who explicits wants to take Suspend and Resume action on the Sandbox. 
+The `spec.replicas` field is being shoehorned for Suspend and Resume use-case. This is unintuitive for the users who explicitly want to take Suspend and Resume action on the Sandbox. 
 
 ## Goals for Beta
 

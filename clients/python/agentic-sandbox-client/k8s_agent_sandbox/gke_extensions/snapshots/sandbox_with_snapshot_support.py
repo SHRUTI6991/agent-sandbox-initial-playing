@@ -96,8 +96,7 @@ class SandboxWithSnapshotSupport(Sandbox):
     def is_suspended(self) -> bool:
         """
         Checks if the sandbox is currently suspended by inspecting the Sandbox CR.
-        A sandbox is considered suspended if spec.mode is set to suspended and 
-        it has no podIPs assigned.
+        A sandbox is considered suspended if spec.mode is set to suspended.
         """
         try:
             sandbox_cr = self.k8s_helper.custom_objects_api.get_namespaced_custom_object(
