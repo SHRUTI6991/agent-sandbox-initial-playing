@@ -75,7 +75,7 @@ configuring auto suspend policies etc.
 Implementing suspend and resume is complex because snapshotting is runtime-specific. To ensure a safe and manageable delivery, we are rolling out the capabilities in phases.
 
 ### Phase 1: Beta
-* **Declarative Pausing + Strategy:** Implementing a `spec.suspend: true` boolean field paired with `spec.strategy` on the Sandbox CRD. This aligns with standard stateful APIs (like Jobs) and cleanly separates the intent to pause from the physical execution.
+* **Declarative Pausing + Strategy:** Implementing a `spec.suspend: true` boolean field paired with `spec.suspensionStrategy` on the Sandbox CRD. This aligns with standard stateful APIs (like Jobs) and cleanly separates the intent to pause from the physical execution.
 * **Pluggable Architecture:** A unified `SnapshotClass` API (mimicking `StorageClass`) to route snapshot commands to the correct runtime provisioner.
 * **Manual Triggers:** Suspend and resume actions are manually invoked by developers or external agents modifying the Sandbox specification.
 
