@@ -102,8 +102,8 @@ Simulating imperative actions by creating a lightweight, temporary CR (e.g., `Sa
 * **Pros:** 100% standard CRD-compatible and leaves a historical audit trail of who suspended the sandbox and when.
 * **Cons:** Creates resource churn in etcd and requires writing a garbage collector to delete these action objects after completion.
 
-#### 3. The `spec.suspend` Boolean + `spec.strategy` - *Selected for Beta*
-This approach aligns with standard Kubernetes stateful APIs (like the Job API, which uses `spec.suspend` to temporarily pause processing without losing work). The API remains purely declarative by exposing a boolean field (`spec.suspend: true`), with an accompanying `spec.strategy` to dictate how the suspension is handled.
+#### 3. The `spec.suspend` Boolean + `spec.suspensionStrategy` - *Selected for Beta*
+This approach aligns with standard Kubernetes stateful APIs (like the Job API, which uses `spec.suspend` to temporarily pause processing without losing work). The API remains purely declarative by exposing a boolean field (`spec.suspend: true`), with an accompanying `spec.suspensionStrategy` to dictate how the suspension is handled.
 * **Pros:**
   * **Semantic Meaning:** Clearly states the sandbox's execution is paused.
   * **Scale Constraints:** Matches the singleton nature of 1-to-1 interactive workspaces perfectly.
@@ -120,7 +120,7 @@ Overloading the `spec.replicas` field to control stateful hibernation.
 
 ## Suspension Strategies Explained
 
-When a Sandbox is marked as `suspend: true`, the physical execution of that pause is dictated by the `spec.strategy.type`. We propose three distinct strategies to accommodate different workloads and latency requirements:
+When a Sandbox is marked as `suspend: true`, the physical execution of that pause is dictated by the `spec.suspensionStrategy.type`. We propose three distinct strategies to accommodate different workloads and latency requirements:
 
 | Strategy Type | What `suspend: true` Does | When to Use It |
 | :--- | :--- | :--- |
@@ -230,7 +230,7 @@ spec:
   # The simple, developer-friendly toggle
   suspend: true
   # The operational instruction manual
-  strategy:
+  suspensionStrategy:
     type: "Hibernate"
     hibernate:
       snapshotClass: "fast-memory-snapshot" # Name-based snapshot class reference
