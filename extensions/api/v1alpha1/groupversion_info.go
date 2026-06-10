@@ -12,7 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+<<<<<<< HEAD
 // Package v1alpha1 contains API Schema definitions for the agents v1alpha1 API group.
+=======
+// Package v1alpha1 contains API Schema definitions for the extensions.agents v1alpha1 API group.
+>>>>>>> c8a6018 ([v1beta1 migration]: Resurrect v1alpha1 APIs & Support Multi-Version CRDs (#955))
 // +kubebuilder:object:generate=true
 // +groupName=extensions.agents.x-k8s.io
 package v1alpha1
