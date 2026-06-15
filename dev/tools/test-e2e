@@ -29,6 +29,7 @@ def run_go_e2e_tests(repo_root, artifact_dir, env):
 
     go_test_args = [
        "./test/e2e/...",
+       "-p=1",
        "--parallel=1",
        "-v",
     ]

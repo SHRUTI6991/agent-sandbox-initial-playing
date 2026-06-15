@@ -28,10 +28,10 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	rbacv1 "k8s.io/api/rbac/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	sandboxv1alpha1 "sigs.k8s.io/agent-sandbox/api/v1alpha1"
@@ -207,10 +207,11 @@ func TestHelmUpgrade(t *testing.T) {
 		require.NoError(t, err)
 
 		for i, v := range crd.Spec.Versions {
-			if v.Name == "v1alpha1" {
+			switch v.Name {
+			case "v1alpha1":
 				crd.Spec.Versions[i].Served = true
 				crd.Spec.Versions[i].Storage = true
-			} else if v.Name == "v1beta1" {
+			case "v1beta1":
 				crd.Spec.Versions[i].Served = false
 				crd.Spec.Versions[i].Storage = false
 			}
@@ -228,13 +229,14 @@ func TestHelmUpgrade(t *testing.T) {
 	for name := range originalCRDs {
 		require.Eventually(t, func() bool {
 			var list client.ObjectList
-			if name == "sandboxes.agents.x-k8s.io" {
+			switch name {
+			case "sandboxes.agents.x-k8s.io":
 				list = &sandboxv1alpha1.SandboxList{}
-			} else if name == "sandboxtemplates.extensions.agents.x-k8s.io" {
+			case "sandboxtemplates.extensions.agents.x-k8s.io":
 				list = &extensionsv1alpha1.SandboxTemplateList{}
-			} else if name == "sandboxclaims.extensions.agents.x-k8s.io" {
+			case "sandboxclaims.extensions.agents.x-k8s.io":
 				list = &extensionsv1alpha1.SandboxClaimList{}
-			} else if name == "sandboxwarmpools.extensions.agents.x-k8s.io" {
+			case "sandboxwarmpools.extensions.agents.x-k8s.io":
 				list = &extensionsv1alpha1.SandboxWarmPoolList{}
 			}
 			err := tc.List(ctx, list)

@@ -26,6 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -143,10 +144,11 @@ func TestUpgrade(t *testing.T) {
 		require.NoError(t, err)
 
 		for i, v := range crd.Spec.Versions {
-			if v.Name == "v1alpha1" {
+			switch v.Name {
+			case "v1alpha1":
 				crd.Spec.Versions[i].Served = true
 				crd.Spec.Versions[i].Storage = true
-			} else if v.Name == "v1beta1" {
+			case "v1beta1":
 				crd.Spec.Versions[i].Served = false
 				crd.Spec.Versions[i].Storage = false
 			}
@@ -164,13 +166,14 @@ func TestUpgrade(t *testing.T) {
 	for name := range originalCRDs {
 		require.Eventually(t, func() bool {
 			var list client.ObjectList
-			if name == "sandboxes.agents.x-k8s.io" {
+			switch name {
+			case "sandboxes.agents.x-k8s.io":
 				list = &sandboxv1alpha1.SandboxList{}
-			} else if name == "sandboxtemplates.extensions.agents.x-k8s.io" {
+			case "sandboxtemplates.extensions.agents.x-k8s.io":
 				list = &extensionsv1alpha1.SandboxTemplateList{}
-			} else if name == "sandboxclaims.extensions.agents.x-k8s.io" {
+			case "sandboxclaims.extensions.agents.x-k8s.io":
 				list = &extensionsv1alpha1.SandboxClaimList{}
-			} else if name == "sandboxwarmpools.extensions.agents.x-k8s.io" {
+			case "sandboxwarmpools.extensions.agents.x-k8s.io":
 				list = &extensionsv1alpha1.SandboxWarmPoolList{}
 			}
 			err := tc.List(ctx, list)
@@ -363,20 +366,22 @@ func TestUpgrade(t *testing.T) {
 		return currentDeploy.Status.ReadyReplicas == originalReplicas
 	}, 2*time.Minute, 2*time.Second, "expected controller deployment to become ready")
 
-	// Wait for the webhook Service endpoints to be populated (indicating webhook server is running and reachable).
+	// Wait for the webhook Service endpoints (EndpointSlices) to be populated and ready.
 	require.Eventually(t, func() bool {
-		endpoints := &corev1.Endpoints{}
-		err := tc.Get(ctx, types.NamespacedName{Name: "agent-sandbox-webhook-service", Namespace: "agent-sandbox-system"}, endpoints)
+		slices := &discoveryv1.EndpointSliceList{}
+		err := tc.List(ctx, slices, client.InNamespace("agent-sandbox-system"), client.MatchingLabels{"kubernetes.io/service-name": "agent-sandbox-webhook-service"})
 		if err != nil {
 			return false
 		}
-		for _, subset := range endpoints.Subsets {
-			if len(subset.Addresses) > 0 {
-				return true
+		for _, slice := range slices.Items {
+			for _, ep := range slice.Endpoints {
+				if len(ep.Addresses) > 0 && ep.Conditions.Ready != nil && *ep.Conditions.Ready {
+					return true
+				}
 			}
 		}
 		return false
-	}, 1*time.Minute, 2*time.Second, "expected webhook service endpoints to be populated")
+	}, 1*time.Minute, 2*time.Second, "expected webhook service endpoint slices to be populated and ready")
 
 	// Wait for the conversion webhook to be fully ready and accepting requests.
 	// We do this by attempting to list SandboxWarmPools as v1beta1. Since the existing
