@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api_upgrade
+package apiupgrade
 
 import (
 	"context"
@@ -93,10 +93,10 @@ func TestHelmUpgrade(t *testing.T) {
 
 	// Parse image repository and tag from the existing controller.
 	fullImage := deploy.Spec.Template.Spec.Containers[0].Image
-	parts := strings.Split(fullImage, ":")
-	require.Len(t, parts, 2, "unexpected image name format: %s", fullImage)
-	imageRepo := parts[0]
-	imageTag := parts[1]
+	lastColon := strings.LastIndex(fullImage, ":")
+	require.Greater(t, lastColon, 0, "unexpected image name format: %s", fullImage)
+	imageRepo := fullImage[:lastColon]
+	imageTag := fullImage[lastColon+1:]
 
 	kubeconfig := framework.GetKubeconfig()
 	helmPath := filepath.Join(filepath.Dir(kubeconfig), "helm") // bin/helm
@@ -434,7 +434,7 @@ func TestHelmUpgrade(t *testing.T) {
 	res := <-cmdChan
 	require.NoError(t, res.err, "helm upgrade failed: %s", string(res.output))
 
-	// 6. Validation
+	// 9. Validation
 	t.Log("Validating migrated resources and conversion webhook...")
 
 	// Verify Sandbox is converted correctly (replicas: 0 -> operatingMode: Suspended).
