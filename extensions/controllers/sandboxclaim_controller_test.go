@@ -5152,6 +5152,7 @@ func TestSandboxClaimReconcile_TransientLookupErrorPreservesStatus(t *testing.T)
 	require.NoError(t, err)
 	require.Equal(t, "warm-sandbox", updatedClaim.Status.SandboxStatus.Name, "status.sandbox.name must not be wiped out when sandbox lookup fails with transient error")
 }
+<<<<<<< HEAD
 
 type mockTracer struct {
 	asmetrics.Instrumenter
@@ -5214,3 +5215,5 @@ func TestReconcile_TracingNormalization(t *testing.T) {
 	require.NotNil(t, mt.capturedAttrs)
 	require.Equal(t, "unknown", mt.capturedAttrs[sandboxv1beta1.CreatedByLabel], "created-by label must be normalized in span attributes")
 }
+=======
+>>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
