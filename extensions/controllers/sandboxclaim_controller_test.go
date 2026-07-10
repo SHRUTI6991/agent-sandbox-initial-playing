@@ -5032,6 +5032,7 @@ func TestCreateSandboxClaimVolumeClaimTemplatesErrors(t *testing.T) {
 	}
 }
 
+<<<<<<< HEAD
 func TestSandboxClaimReconcile_PatchErrorPreservesStatus(t *testing.T) {
 	scheme := newScheme(t)
 	template := &extensionsv1beta1.SandboxTemplate{
@@ -5135,10 +5136,59 @@ func TestSandboxClaimReconcile_TransientLookupErrorPreservesStatus(t *testing.T)
 		}).
 		Build()
 
+=======
+type mockTracer struct {
+	asmetrics.Instrumenter
+	capturedAttrs map[string]string
+}
+
+func (m *mockTracer) StartSpan(ctx context.Context, _ metav1.Object, _ string, attrs map[string]string) (context.Context, func()) {
+	if len(attrs) > 0 {
+		m.capturedAttrs = attrs
+	}
+	return ctx, func() {}
+}
+
+func (m *mockTracer) GetTraceContext(_ context.Context) string {
+	return ""
+}
+
+func (m *mockTracer) IsRecording(_ context.Context) bool {
+	return true
+}
+
+func (m *mockTracer) AddEvent(_ context.Context, _ string, _ map[string]string) {}
+
+func TestReconcile_TracingNormalization(t *testing.T) {
+	claimName := "tracing-test-claim"
+	claim := &extensionsv1beta1.SandboxClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      claimName,
+			Namespace: "default",
+			UID:       "uid-claim-1",
+			Labels: map[string]string{
+				sandboxv1beta1.CreatedByLabel: "invalid-value",
+			},
+		},
+		Spec: extensionsv1beta1.SandboxClaimSpec{
+			WarmPoolRef: extensionsv1beta1.SandboxWarmPoolRef{Name: "test-warmpool"},
+		},
+	}
+
+	scheme := newScheme(t)
+	fakeClient := fake.NewClientBuilder().
+		WithScheme(scheme).
+		WithObjects(claim).
+		WithStatusSubresource(claim).
+		Build()
+
+	mt := &mockTracer{}
+>>>>>>> a4f8c6f (Track sandboxes created via SDK (#1039))
 	reconciler := &SandboxClaimReconciler{
 		Client:           fakeClient,
 		Scheme:           scheme,
 		Recorder:         events.NewFakeRecorder(10),
+<<<<<<< HEAD
 		Tracer:           asmetrics.NewNoOp(),
 		WarmSandboxQueue: queue.NewSimpleSandboxQueue(),
 	}
@@ -5151,6 +5201,18 @@ func TestSandboxClaimReconcile_TransientLookupErrorPreservesStatus(t *testing.T)
 	err = fakeClient.Get(context.Background(), req.NamespacedName, updatedClaim)
 	require.NoError(t, err)
 	require.Equal(t, "warm-sandbox", updatedClaim.Status.SandboxStatus.Name, "status.sandbox.name must not be wiped out when sandbox lookup fails with transient error")
+=======
+		Tracer:           mt,
+		WarmSandboxQueue: queue.NewSimpleSandboxQueue(),
+	}
+
+	req := reconcile.Request{NamespacedName: types.NamespacedName{Name: claimName, Namespace: "default"}}
+	_, err := reconciler.Reconcile(context.Background(), req)
+	_ = err
+
+	require.NotNil(t, mt.capturedAttrs)
+	require.Equal(t, "unknown", mt.capturedAttrs[sandboxv1beta1.CreatedByLabel], "created-by label must be normalized in span attributes")
+>>>>>>> a4f8c6f (Track sandboxes created via SDK (#1039))
 }
 <<<<<<< HEAD
 

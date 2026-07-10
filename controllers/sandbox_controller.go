@@ -1044,6 +1044,7 @@ func (r *SandboxReconciler) updatePodMetadata(ctx context.Context, pod *corev1.P
 			updated = true
 		}
 	}
+<<<<<<< HEAD
 	if expectedTemplateRefHash != "" {
 		if pod.Labels[sandboxv1beta1.SandboxTemplateRefHashLabel] != expectedTemplateRefHash {
 			pod.Labels[sandboxv1beta1.SandboxTemplateRefHashLabel] = expectedTemplateRefHash
@@ -1055,6 +1056,8 @@ func (r *SandboxReconciler) updatePodMetadata(ctx context.Context, pod *corev1.P
 			updated = true
 		}
 	}
+=======
+>>>>>>> 3791cb1 (Track sandboxes created via SDK (#1039))
 
 	// Ensure the created-by label is present on the Pod if it is present on the Sandbox.
 	// We normalize it to a known allow-list to prevent invalid values or high cardinality on the Pod.
