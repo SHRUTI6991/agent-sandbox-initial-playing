@@ -77,6 +77,7 @@ bash dev/tools/migrate.sh --phase=bootstrap
 #    endpoints before proceeding.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #    Note: Starting from v0.5.2, the core manifest is named `sandbox.yaml`. 
 #    If upgrading to an older release (like v0.5.0 or v0.5.1), apply `manifest.yaml` instead of `sandbox.yaml`:
 #    kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/manifest.yaml
@@ -90,6 +91,11 @@ kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/downl
 #
 #    Note: For releases older than v0.5.2, the core manifest is named manifest.yaml
 #    instead of sandbox.yaml.
+=======
+#    Note: Starting from v0.5.2, the core manifest is named `sandbox.yaml`. 
+#    If upgrading to an older release (like v0.5.0 or v0.5.1), apply `manifest.yaml` instead of `sandbox.yaml`:
+#    kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/manifest.yaml
+>>>>>>> c751178 (Reflect changes that the fix will come.)
 kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/sandbox.yaml
 kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/extensions.yaml
 >>>>>>> 0b4e4b3 (Address a few minor comments.)
