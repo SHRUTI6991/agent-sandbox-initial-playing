@@ -412,11 +412,17 @@ def create_v1alpha1_objects():
     # Explicitly patch the status of upgrade-claim-warm since subresources.status drops status fields on normal apply
     run_cmd(["kubectl", "patch", "sandboxclaims.v1alpha1.extensions.agents.x-k8s.io", "upgrade-claim-warm", "-n", "default", "--subresource=status", "--type=merge", "-p", '{"status":{"sandbox":{"name":"upgrade-pool-warm-a1b2c"}}}'])
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     claim_uid = run_cmd(["kubectl", "get", "sandboxclaims.v1alpha1.extensions.agents.x-k8s.io", "upgrade-claim-warm", "-o", "jsonpath={.metadata.uid}"], capture_output=True).stdout.strip()
     owner_patch = {"metadata":{"ownerReferences":[{"apiVersion":"extensions.agents.x-k8s.io/v1alpha1","kind":"SandboxClaim","name":"upgrade-claim-warm","uid":claim_uid,"controller":True,"blockOwnerDeletion":True}]}}
     run_cmd(["kubectl", "patch", "sandboxes.v1alpha1.agents.x-k8s.io", "upgrade-pool-warm-a1b2c", "--type=merge", "-p", json.dumps(owner_patch)])
 >>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
+=======
+    claim_uid = run_cmd(["kubectl", "get", "sandboxclaims.v1alpha1.extensions.agents.x-k8s.io", "upgrade-claim-warm", "-n", "default", "-o", "jsonpath={.metadata.uid}"], capture_output=True).stdout.strip()
+    owner_patch = {"metadata":{"ownerReferences":[{"apiVersion":"extensions.agents.x-k8s.io/v1alpha1","kind":"SandboxClaim","name":"upgrade-claim-warm","uid":claim_uid,"controller":True,"blockOwnerDeletion":True}]}}
+    run_cmd(["kubectl", "patch", "sandboxes.v1alpha1.agents.x-k8s.io", "upgrade-pool-warm-a1b2c", "-n", "default", "--type=merge", "-p", json.dumps(owner_patch)])
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
     
     print("Waiting for upgrade-sandbox-running Pod to be created...")
     pod_exists = False
@@ -451,6 +457,7 @@ def create_v1alpha1_objects():
     print(f"Captured active pod info - Name: upgrade-sandbox-running, UID: {pod_uid}, CreatedAt: {pod_creation}")
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     print("Creating 10 SandboxClaims with assigned sandbox annotations/labels to stress-test upgrade race condition...")
     claim_manifests = []
     for i in range(1, 11):
@@ -483,11 +490,42 @@ spec:
 =======
     print("Creating 10 warm sandboxes and claims to stress-test upgrade race condition...")
     flake_manifests = []
+=======
+    print("Creating 10 SandboxClaims with assigned sandbox annotations/labels to stress-test upgrade race condition...")
+    claim_manifests = []
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
     for i in range(1, 11):
-        sb_name = f"upgrade-pool-warm-flake-{i}"
         claim_name = f"upgrade-claim-warm-flake-{i}"
+<<<<<<< HEAD
         flake_manifests.append(f"""apiVersion: agents.x-k8s.io/v1alpha1
 >>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
+=======
+        sb_name = f"upgrade-pool-warm-f{i}"
+        claim_manifests.append(f"""apiVersion: extensions.agents.x-k8s.io/v1alpha1
+kind: SandboxClaim
+metadata:
+  name: {claim_name}
+  namespace: default
+  annotations:
+    agents.x-k8s.io/sandbox-name: {sb_name}
+  labels:
+    agents.x-k8s.io/sandbox-name: {sb_name}
+spec:
+  sandboxTemplateRef:
+    name: upgrade-template
+  warmpool: "default"
+""")
+    run_cmd(["kubectl", "apply", "-f", "-"], input_data="\n---\n".join(claim_manifests))
+    time.sleep(2)
+
+    print("Fetching UIDs and creating 10 corresponding Sandboxes with ownerReferences...")
+    sb_manifests = []
+    for i in range(1, 11):
+        claim_name = f"upgrade-claim-warm-flake-{i}"
+        sb_name = f"upgrade-pool-warm-f{i}"
+        c_uid = run_cmd(["kubectl", "get", "sandboxclaims.v1alpha1.extensions.agents.x-k8s.io", claim_name, "-n", "default", "-o", "jsonpath={.metadata.uid}"], capture_output=True).stdout.strip()
+        sb_manifests.append(f"""apiVersion: agents.x-k8s.io/v1alpha1
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
 kind: Sandbox
 metadata:
   name: {sb_name}
@@ -495,6 +533,9 @@ metadata:
   labels:
     agents.x-k8s.io/warmpool: upgrade-pool-warm
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
   ownerReferences:
   - apiVersion: extensions.agents.x-k8s.io/v1alpha1
     kind: SandboxClaim
@@ -502,8 +543,11 @@ metadata:
     uid: {c_uid}
     controller: true
     blockOwnerDeletion: true
+<<<<<<< HEAD
 =======
 >>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
+=======
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
 spec:
   replicas: 1
   podTemplate:
@@ -511,6 +555,7 @@ spec:
       containers:
       - name: pause
         image: registry.k8s.io/pause:3.10
+<<<<<<< HEAD
 <<<<<<< HEAD
 """)
     run_cmd(["kubectl", "apply", "-f", "-"], input_data="\n---\n".join(sb_manifests))
@@ -532,19 +577,24 @@ spec:
   sandboxTemplateRef:
     name: upgrade-template
   warmpool: "default"
+=======
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
 """)
-    run_cmd(["kubectl", "apply", "-f", "-"], input_data="\n---\n".join(flake_manifests))
-    time.sleep(3)
+    run_cmd(["kubectl", "apply", "-f", "-"], input_data="\n---\n".join(sb_manifests))
+    time.sleep(2)
 
-    print("Initializing status and ownership for 10 stress-test warm claims...")
+    print("Initializing status for 10 stress-test warm claims...")
     for i in range(1, 11):
-        sb_name = f"upgrade-pool-warm-flake-{i}"
+        sb_name = f"upgrade-pool-warm-f{i}"
         claim_name = f"upgrade-claim-warm-flake-{i}"
         run_cmd(["kubectl", "patch", "sandboxclaims.v1alpha1.extensions.agents.x-k8s.io", claim_name, "-n", "default", "--subresource=status", "--type=merge", "-p", f'{{"status":{{"sandbox":{{"name":"{sb_name}"}}}}}}'])
+<<<<<<< HEAD
         c_uid = run_cmd(["kubectl", "get", "sandboxclaims.v1alpha1.extensions.agents.x-k8s.io", claim_name, "-o", "jsonpath={.metadata.uid}"], capture_output=True).stdout.strip()
         o_patch = {"metadata":{"ownerReferences":[{"apiVersion":"extensions.agents.x-k8s.io/v1alpha1","kind":"SandboxClaim","name":claim_name,"uid":c_uid,"controller":True,"blockOwnerDeletion":True}]}}
         run_cmd(["kubectl", "patch", "sandboxes.v1alpha1.agents.x-k8s.io", sb_name, "--type=merge", "-p", json.dumps(o_patch)])
 >>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
+=======
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
 
     print("Waiting for v1alpha1 claims to be bound...")
     all_bound = False
@@ -758,10 +808,14 @@ def validate_migration(active_pod_info):
         assert claim_obj is not None, f"Claim {claim_name} missing from migrated claims list!"
         actual_sb = claim_obj.get("status", {}).get("sandbox", {}).get("name")
 <<<<<<< HEAD
+<<<<<<< HEAD
         expected_sb = f"upgrade-pool-warm-f{i}"
 =======
         expected_sb = f"upgrade-pool-warm-flake-{i}"
 >>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
+=======
+        expected_sb = f"upgrade-pool-warm-f{i}"
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
         assert actual_sb == expected_sb, \
             f"Flake triggered! {claim_name} lost its original sandbox during upgrade. Expected {expected_sb}, got: {actual_sb}"
         assert "agents.x-k8s.io/storage-migrated-at" in claim_obj["metadata"]["annotations"], \

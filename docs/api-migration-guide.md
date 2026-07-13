@@ -76,6 +76,7 @@ bash dev/tools/migrate.sh --phase=bootstrap
 #    Wait until the controller pod is Ready and the webhook Service has
 #    endpoints before proceeding.
 <<<<<<< HEAD
+<<<<<<< HEAD
 #    Note: Starting from v0.5.2, the core manifest is named `sandbox.yaml`. 
 #    If upgrading to an older release (like v0.5.0 or v0.5.1), apply `manifest.yaml` instead of `sandbox.yaml`:
 #    kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/manifest.yaml
@@ -85,6 +86,13 @@ kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/downl
 kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v0.5.2/manifest.yaml
 kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/v0.5.2/extensions.yaml
 >>>>>>> 5d802da (Fix warm-claim cold restart on v0.5.0 upgrade due to unretried optimistic lock conflicts.)
+=======
+#
+#    Note: For releases older than v0.5.2, the core manifest is named manifest.yaml
+#    instead of sandbox.yaml.
+kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/sandbox.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/agent-sandbox/releases/download/<new-version>/extensions.yaml
+>>>>>>> 0b4e4b3 (Address a few minor comments.)
 kubectl rollout status deploy/agent-sandbox-controller -n agent-sandbox-system
 kubectl wait --for=condition=Ready pods -l app=agent-sandbox-controller -n agent-sandbox-system
 
